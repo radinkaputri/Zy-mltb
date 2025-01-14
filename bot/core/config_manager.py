@@ -19,8 +19,8 @@ class Config:
     INCOMPLETE_TASK_NOTIFIER = False
     INDEX_URL = ""
     IS_TEAM_DRIVE = False
-    JD_EMAIL = ""
-    JD_PASS = ""
+    MEGA_EMAIL = ""
+    MEGA_PASS = ""
     LEECH_DUMP_CHAT = ""
     LEECH_FILENAME_PREFIX = ""
     LEECH_SPLIT_SIZE = 2097152000
@@ -39,6 +39,7 @@ class Config:
     RCLONE_SERVE_PORT = 8080
     RSS_CHAT = ""
     RSS_DELAY = 600
+    RSS_SIZE_LIMIT = 0
     SEARCH_API_LINK = ""
     SEARCH_LIMIT = 0
     SEARCH_PLUGINS = []
@@ -54,7 +55,6 @@ class Config:
     USER_TRANSMISSION = False
     UPSTREAM_REPO = ""
     UPSTREAM_BRANCH = "master"
-    USENET_SERVERS = []
     USER_SESSION_STRING = ""
     USE_SERVICE_ACCOUNTS = False
     WEB_PINCODE = False
@@ -103,12 +103,6 @@ class Config:
                 ]:
                     if value:
                         value = value.strip("/")
-                elif attr == "USENET_SERVERS":
-                    try:
-                        if not value[0].get("host"):
-                            continue
-                    except:
-                        continue
                 setattr(cls, attr, value)
         for key in ["BOT_TOKEN", "OWNER_ID", "TELEGRAM_API", "TELEGRAM_HASH"]:
             value = getattr(cls, key)
@@ -134,12 +128,6 @@ class Config:
                 ]:
                     if value:
                         value = value.strip("/")
-                elif key == "USENET_SERVERS":
-                    try:
-                        if not value[0].get("host"):
-                            value = []
-                    except:
-                        value = []
                 setattr(cls, key, value)
         for key in ["BOT_TOKEN", "OWNER_ID", "TELEGRAM_API", "TELEGRAM_HASH"]:
             value = getattr(cls, key)

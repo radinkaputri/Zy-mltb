@@ -4,7 +4,7 @@ from aiofiles.os import path as aiopath, remove
 from asyncio import gather, create_subprocess_exec
 from os import execl as osexecl
 
-from .. import intervals, scheduler, sabnzbd_client, LOGGER
+from .. import intervals, scheduler, LOGGER
 from ..helper.ext_utils.bot_utils import new_task, sync_to_async
 from ..helper.telegram_helper.message_utils import (
     send_message,
@@ -105,25 +105,15 @@ async def confirm_restart(_, query):
             scheduler.shutdown(wait=False)
         if qb := intervals["qb"]:
             qb.cancel()
-        if jd := intervals["jd"]:
-            jd.cancel()
-        if nzb := intervals["nzb"]:
-            nzb.cancel()
         if st := intervals["status"]:
             for intvl in list(st.values()):
                 intvl.cancel()
         await sync_to_async(clean_all)
-        if sabnzbd_client.LOGGED_IN:
-            await gather(
-                sabnzbd_client.pause_all(),
-                sabnzbd_client.purge_all(True),
-                sabnzbd_client.delete_history("all", delete_files=True),
-            )
         proc1 = await create_subprocess_exec(
             "pkill",
             "-9",
             "-f",
-            "gunicorn|aria2c|qbittorrent-nox|ffmpeg|rclone|java|sabnzbdplus|7z|split",
+            "gunicorn|xria|xnox|xtra|xone|7z|split",
         )
         proc2 = await create_subprocess_exec("python3", "update.py")
         await gather(proc1.wait(), proc2.wait())

@@ -176,7 +176,7 @@ class TaskListener(TaskConfig):
         if self.join and not self.is_file:
             await join_files(up_path)
 
-        if self.extract and not self.is_nzb:
+        if self.extract:
             up_path = await self.proceed_extract(up_path, gid)
             if self.is_cancelled:
                 return
@@ -340,11 +340,11 @@ class TaskListener(TaskConfig):
                 for index, (link, name) in enumerate(files.items(), start=1):
                     fmsg += f"{index}. <a href='{link}'>{name}</a>\n"
                     if len(fmsg.encode() + msg.encode()) > 4000:
-                        await send_message(self.message, msg + fmsg)
+                        await send_message(self.message, f"{msg}<blockquote expandable>{fmsg}</blockquote>")
                         await sleep(1)
                         fmsg = ""
                 if fmsg != "":
-                    await send_message(self.message, msg + fmsg)
+                    await send_message(self.message, f"{msg}<blockquote expandable>{fmsg}</blockquote>")
         else:
             msg += f"\n\n<b>Type: </b>{mime_type}"
             if mime_type == "Folder":

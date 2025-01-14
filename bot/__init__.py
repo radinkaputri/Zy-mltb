@@ -1,5 +1,8 @@
+import os
+import subprocess
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from aria2p import API as ariaAPI, Client as ariaClient
+from aria2p import API as ariaAPI  # noqa: N811
+from aria2p import Client as ariaClient
 from asyncio import Lock, new_event_loop, set_event_loop
 from logging import (
     getLogger,
@@ -11,7 +14,6 @@ from logging import (
     ERROR,
 )
 from qbittorrentapi import Client as QbClient
-from sabnzbdapi import SabnzbdClient
 from socket import setdefaulttimeout
 from time import time
 from tzlocal import get_localzone
@@ -43,14 +45,11 @@ basicConfig(
 
 LOGGER = getLogger(__name__)
 
-intervals = {"status": {}, "qb": "", "jd": "", "nzb": "", "stopAll": False}
+intervals = {"status": {}, "qb": "", "stopAll": False}
 qb_torrents = {}
-jd_downloads = {}
-nzb_jobs = {}
 user_data = {}
 aria2_options = {}
 qbit_options = {}
-nzb_options = {}
 queued_dl = {}
 queued_up = {}
 status_dict = {}
@@ -62,8 +61,6 @@ multi_tags = set()
 task_dict_lock = Lock()
 queue_dict_lock = Lock()
 qb_listener_lock = Lock()
-nzb_listener_lock = Lock()
-jd_listener_lock = Lock()
 cpu_eater_lock = Lock()
 same_directory_lock = Lock()
 extension_filter = ["aria2", "!qB"]
@@ -72,6 +69,8 @@ drives_ids = []
 index_urls = []
 
 aria2 = ariaAPI(ariaClient(host="http://localhost", port=6800, secret=""))
+
+subprocess.run(["xnox", "-d", f"--profile={os.getcwd()}"], check=False)
 
 qbittorrent_client = QbClient(
     host="localhost",
@@ -85,10 +84,18 @@ qbittorrent_client = QbClient(
     },
 )
 
-sabnzbd_client = SabnzbdClient(
-    host="http://localhost",
-    api_key="mltb",
-    port="8070",
+trackers = (
+    subprocess.check_output(
+        "curl -Ns https://raw.githubusercontent.com/XIU2/TrackersListCollection/master/all.txt https://ngosang.github.io/trackerslist/trackers_all_http.txt https://newtrackon.com/api/all https://raw.githubusercontent.com/hezhijie0327/Trackerslist/main/trackerslist_tracker.txt | awk '$0' | tr '\n\n' ','",
+        shell=True,
+    )
+    .decode("utf-8")
+    .rstrip(",")
 )
+
+with open("a2c.conf", "a+") as a:
+    a.write("bt-stop-timeout=600\n")
+    a.write(f"bt-tracker=[{trackers}]")
+subprocess.run(["xria", "--conf-path=/usr/src/app/a2c.conf"], check=False)
 
 scheduler = AsyncIOScheduler(timezone=str(get_localzone()), event_loop=bot_loop)

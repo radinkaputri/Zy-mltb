@@ -1,3 +1,4 @@
+from os import environ
 from aiofiles.os import path as aiopath, remove, makedirs
 from aiofiles import open as aiopen
 from aioshutil import rmtree
@@ -6,7 +7,6 @@ from asyncio import create_subprocess_exec, create_subprocess_shell
 from .. import (
     aria2_options,
     qbit_options,
-    nzb_options,
     drives_ids,
     drives_names,
     index_urls,
@@ -15,7 +15,6 @@ from .. import (
     LOGGER,
     rss_dict,
     qbittorrent_client,
-    sabnzbd_client,
     aria2,
 )
 from ..helper.ext_utils.db_handler import database
@@ -41,11 +40,6 @@ def update_aria2_options():
         aria2_options.update(aria2.client.get_global_option())
     else:
         aria2.set_global_options(aria2_options)
-
-
-async def update_nzb_options():
-    no = (await sabnzbd_client.get_config())["config"]["misc"]
-    nzb_options.update(no)
 
 
 async def load_settings():
@@ -91,16 +85,6 @@ async def load_settings():
             {"_id": BOT_ID}, {"_id": 0}
         ):
             qbit_options.update(qbit_opt)
-
-        if nzb_opt := await database.db.settings.nzb.find_one(
-            {"_id": BOT_ID}, {"_id": 0}
-        ):
-            if await aiopath.exists("sabnzbd/SABnzbd.ini.bak"):
-                await remove("sabnzbd/SABnzbd.ini.bak")
-            ((key, value),) = nzb_opt.items()
-            file_ = key.replace("__", ".")
-            async with aiopen(f"sabnzbd/{file_}", "wb+") as f:
-                await f.write(value)
 
         if await database.db.users.find_one():
             rows = database.db.users.find({})
@@ -153,12 +137,6 @@ async def save_settings():
         )
     if await database.db.settings.qbittorrent.find_one({"_id": TgClient.ID}) is None:
         await database.save_qbit_settings()
-    if await database.db.settings.nzb.find_one({"_id": TgClient.ID}) is None:
-        async with aiopen("sabnzbd/SABnzbd.ini", "rb+") as pf:
-            nzb_conf = await pf.read()
-        await database.db.settings.nzb.update_one(
-            {"_id": TgClient.ID}, {"$set": {"SABnzbd__ini": nzb_conf}}, upsert=True
-        )
 
 
 async def update_variables():
@@ -215,29 +193,17 @@ async def update_variables():
 
 
 async def load_configurations():
-
     if not await aiopath.exists(".netrc"):
         async with aiopen(".netrc", "w"):
             pass
-
-    await (
-        await create_subprocess_shell(
-            "chmod 600 .netrc && cp .netrc /root/.netrc && chmod +x aria-nox-nzb.sh && ./aria-nox-nzb.sh"
-        )
-    ).wait()
+    await (await create_subprocess_shell("chmod 600 .netrc")).wait()
+    await (await create_subprocess_shell("cp .netrc /root/.netrc")).wait()
 
     if Config.BASE_URL:
+        PORT = environ.get("PORT") or environ.get("BASE_URL_PORT", 80)
         await create_subprocess_shell(
-            f"gunicorn web.wserver:app --bind 0.0.0.0:{Config.BASE_URL_PORT} --worker-class gevent"
+            f"gunicorn web.wserver:app --bind 0.0.0.0:{PORT} --worker-class gevent"
         )
-
-    if await aiopath.exists("cfg.zip"):
-        if await aiopath.exists("/JDownloader/cfg"):
-            await rmtree("/JDownloader/cfg", ignore_errors=True)
-        await (
-            await create_subprocess_exec("7z", "x", "cfg.zip", "-o/JDownloader")
-        ).wait()
-        await remove("cfg.zip")
 
     if await aiopath.exists("accounts.zip"):
         if await aiopath.exists("accounts"):

@@ -14,10 +14,6 @@ from .mirror_leech import (
     leech,
     qb_leech,
     qb_mirror,
-    jd_leech,
-    jd_mirror,
-    nzb_leech,
-    nzb_mirror,
 )
 from .restart import (
     restart_bot,
@@ -61,10 +57,6 @@ __all__ = [
     "leech",
     "qb_leech",
     "qb_mirror",
-    "jd_leech",
-    "jd_mirror",
-    "nzb_leech",
-    "nzb_mirror",
     "restart_bot",
     "restart_notification",
     "confirm_restart",

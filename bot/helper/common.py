@@ -78,8 +78,6 @@ class TaskConfig:
         self.proceed_count = 0
         self.is_leech = False
         self.is_qbit = False
-        self.is_nzb = False
-        self.is_jd = False
         self.is_clone = False
         self.is_ytdlp = False
         self.equal_splits = False
@@ -165,26 +163,21 @@ class TaskConfig:
             else ["aria2", "!qB"]
         )
         if self.link not in ["rcl", "gdl"]:
-            if not self.is_jd:
-                if is_rclone_path(self.link):
-                    if not self.link.startswith("mrcc:") and self.user_dict.get(
-                        "user_tokens", False
-                    ):
-                        self.link = f"mrcc:{self.link}"
-                    await self.is_token_exists(self.link, "dl")
-                elif is_gdrive_link(self.link):
-                    if not self.link.startswith(
-                        ("mtp:", "tp:", "sa:")
-                    ) and self.user_dict.get("user_tokens", False):
-                        self.link = f"mtp:{self.link}"
-                    await self.is_token_exists(self.link, "dl")
+            if is_rclone_path(self.link):
+                if not self.link.startswith("mrcc:") and self.user_dict.get("user_tokens"):
+                    self.link = f"mrcc:{self.link}"
+                await self.is_token_exists(self.link, "dl")
+            elif is_gdrive_link(self.link):
+                if not self.link.startswith(("mtp:", "tp:", "sa:")) and self.user_dict.get("user_tokens"):
+                    self.link = f"mtp:{self.link}"
+                await self.is_token_exists(self.link, "dl")
         elif self.link == "rcl":
-            if not self.is_ytdlp and not self.is_jd:
+            if not self.is_ytdlp:
                 self.link = await RcloneList(self).get_rclone_path("rcd")
                 if not is_rclone_path(self.link):
                     raise ValueError(self.link)
         elif self.link == "gdl":
-            if not self.is_ytdlp and not self.is_jd:
+            if not self.is_ytdlp:
                 self.link = await GoogleDriveList(self).get_target_id("gdd")
                 if not is_gdrive_id(self.link):
                     raise ValueError(self.link)
@@ -505,8 +498,6 @@ class TaskConfig:
             nextmsg,
             self.is_qbit,
             self.is_leech,
-            self.is_jd,
-            self.is_nzb,
             self.same_dir,
             self.bulk,
             self.multi_tag,
@@ -544,8 +535,6 @@ class TaskConfig:
                 nextmsg,
                 self.is_qbit,
                 self.is_leech,
-                self.is_jd,
-                self.is_nzb,
                 self.same_dir,
                 self.bulk,
                 self.multi_tag,
@@ -568,7 +557,7 @@ class TaskConfig:
                     if (
                         is_first_archive_split(file_)
                         or is_archive(file_)
-                        and not file_.endswith(".rar")
+                        and not file_.lower().endswith(".rar")
                     ):
                         f_path = ospath.join(dirpath, file_)
                         self.files_to_proceed.append(f_path)
@@ -617,7 +606,7 @@ class TaskConfig:
             for ffmpeg_cmd in cmds:
                 self.proceed_count = 0
                 cmd = [
-                    "ffmpeg",
+                    "xtra",
                     "-hide_banner",
                     "-loglevel",
                     "error",

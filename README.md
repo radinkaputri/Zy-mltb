@@ -404,6 +404,7 @@ Fill up rest of the fields. Meaning of each field is discussed below.
 
 - `RSS_DELAY`: Time in seconds for rss refresh interval. Recommended `600` second at least. Default is `600` in
   sec. `Int`
+- `RSS_SIZE_LIMIT`: Item size limit in bytes. Default is `0`. `INT`
 - `RSS_CHAT`: Chat `ID or USERNAME or ID|TOPIC_ID or USERNAME|TOPIC_ID` where rss links will be sent. If you want message to be sent to the channel then add channel id. Add `-100` before channel id. `Int`|`Str`
     - **RSS NOTES**: `RSS_CHAT` is required, otherwise monitor will not work. You must use `USER_STRING_SESSION` --OR--
       *CHANNEL*. If using channel then bot should be added in both channel and group(linked to channel) and `RSS_CHAT`
@@ -553,13 +554,9 @@ sudo docker compose logs --follow
 ```
 mirror - or /m Mirror
 qbmirror - or /qm Mirror torrent using qBittorrent
-jdmirror - or /jm Mirror using jdownloader
-nzbmirror - or /nm Mirror using sabnzbd
 ytdl - or /y Mirror yt-dlp supported links
 leech - or /l Upload to telegram
 qbleech - or /ql Leech torrent using qBittorrent
-jdleech - or /jl Leech using jdownloader
-nzbleech - or /nl Leech using sabnzbd
 ytdlleech - or /yl Leech yt-dlp supported links
 clone - Copy file/folder to Drive
 count - Count file/folder from GDrive

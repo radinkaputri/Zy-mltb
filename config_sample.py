@@ -33,33 +33,12 @@ RCLONE_SERVE_URL = ""
 RCLONE_SERVE_PORT = 0
 RCLONE_SERVE_USER = ""
 RCLONE_SERVE_PASS = ""
-# JDownloader
-JD_EMAIL = ""
-JD_PASS = ""
-# Sabnzbd
-USENET_SERVERS = [
-    {
-        "name": "main",
-        "host": "",
-        "port": 563,
-        "timeout": 60,
-        "username": "",
-        "password": "",
-        "connections": 8,
-        "ssl": 1,
-        "ssl_verify": 2,
-        "ssl_ciphers": "",
-        "enable": 1,
-        "required": 0,
-        "optional": 0,
-        "retention": 0,
-        "send_group": 0,
-        "priority": 0,
-    }
-]
+# Mega
+MEGA_EMAIL = ""
+MEGA_PASS = ""
 # Update
 UPSTREAM_REPO = ""
-UPSTREAM_BRANCH = "master"
+UPSTREAM_BRANCH = "dev"
 # Leech
 LEECH_SPLIT_SIZE = 0
 AS_DOCUMENT = False
@@ -82,6 +61,7 @@ QUEUE_UPLOAD = 0
 # RSS
 RSS_DELAY = 600
 RSS_CHAT = ""
+RSS_SIZE_LIMIT = 0
 # Torrent Search
 SEARCH_API_LINK = ""
 SEARCH_LIMIT = 0

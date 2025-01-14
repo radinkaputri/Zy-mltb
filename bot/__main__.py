@@ -10,7 +10,6 @@ from .core.startup import (
     load_configurations,
     save_settings,
     update_aria2_options,
-    update_nzb_options,
     update_qb_options,
     update_variables,
 )
@@ -23,7 +22,6 @@ from .core.handlers import add_handlers
 from .helper.ext_utils.telegraph_helper import telegraph
 from .helper.ext_utils.bot_utils import sync_to_async, create_help_buttons, new_task
 from .helper.ext_utils.files_utils import clean_all, exit_clean_up
-from .helper.ext_utils.jdownloader_booter import jdownloader
 from .helper.listeners.aria2_listener import start_aria2_listener
 from .helper.telegram_helper.filters import CustomFilters
 from .helper.mirror_leech_utils.rclone_utils.serve import rclone_serve_booter
@@ -62,11 +60,9 @@ async def main():
     await gather(
         sync_to_async(update_qb_options),
         sync_to_async(update_aria2_options),
-        update_nzb_options(),
     )
     await gather(
         save_settings(),
-        jdownloader.boot(),
         sync_to_async(clean_all),
         initiate_search_tools(),
         get_packages_version(),

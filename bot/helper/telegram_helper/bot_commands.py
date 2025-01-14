@@ -5,14 +5,10 @@ class BotCommands:
     StartCommand = f"start{Config.CMD_SUFFIX}"
     MirrorCommand = [f"mirror{Config.CMD_SUFFIX}", f"m{Config.CMD_SUFFIX}"]
     QbMirrorCommand = [f"qbmirror{Config.CMD_SUFFIX}", f"qm{Config.CMD_SUFFIX}"]
-    JdMirrorCommand = [f"jdmirror{Config.CMD_SUFFIX}", f"jm{Config.CMD_SUFFIX}"]
     YtdlCommand = [f"ytdl{Config.CMD_SUFFIX}", f"y{Config.CMD_SUFFIX}"]
-    NzbMirrorCommand = [f"nzbmirror{Config.CMD_SUFFIX}", f"nm{Config.CMD_SUFFIX}"]
     LeechCommand = [f"leech{Config.CMD_SUFFIX}", f"l{Config.CMD_SUFFIX}"]
     QbLeechCommand = [f"qbleech{Config.CMD_SUFFIX}", f"ql{Config.CMD_SUFFIX}"]
-    JdLeechCommand = [f"jdLeech{Config.CMD_SUFFIX}", f"jl{Config.CMD_SUFFIX}"]
     YtdlLeechCommand = [f"ytdlleech{Config.CMD_SUFFIX}", f"yl{Config.CMD_SUFFIX}"]
-    NzbLeechCommand = [f"nzbleech{Config.CMD_SUFFIX}", f"nl{Config.CMD_SUFFIX}"]
     CloneCommand = f"clone{Config.CMD_SUFFIX}"
     CountCommand = f"count{Config.CMD_SUFFIX}"
     DeleteCommand = f"del{Config.CMD_SUFFIX}"

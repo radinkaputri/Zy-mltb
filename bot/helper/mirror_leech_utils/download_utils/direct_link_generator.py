@@ -31,6 +31,8 @@ def direct_link_generator(link):
         raise DirectDownloadLinkException("ERROR: Invalid URL")
     elif "yadi.sk" in link or "disk.yandex." in link:
         return yandex_disk(link)
+    elif "buzzheavier.com" in domain:
+        return buzzheavier(link)
     elif "mediafire.com" in domain:
         return mediafire(link)
     elif "osdn.net" in domain:
@@ -216,6 +218,39 @@ def get_captcha_token(session, params):
     if token := findall(r'"rresp","(.*?)"', res.text):
         return token[0]
 
+def buzzheavier(url):
+    """
+    Generate a direct download link for buzzheavier URLs.
+    @param link: URL from buzzheavier
+    @return: Direct download link
+    """
+    session = Session()
+    if not "/download" in url:
+        url += "/download"
+
+    # Normalize URL
+    url = url.strip()
+    session.headers.update(
+        {
+            "referer": url.split("/download")[0],
+            "hx-current-url": url.split("/download")[0],
+            "hx-request": "true",
+            "priority": "u=1, i",
+        }
+    )
+    try:
+        response = session.get(url)
+        d_url = response.headers.get("Hx-Redirect")
+
+        if not d_url:
+            raise DirectDownloadLinkException("ERROR: Failed to fetch direct link.")
+        parsed_url = urlparse(url)
+        direct_url = f"{parsed_url.scheme}://{parsed_url.netloc}{d_url}"
+        return direct_url
+    except Exception as e:
+        raise DirectDownloadLinkException(f"ERROR: {str(e)}")
+    finally:
+        session.close()
 
 def mediafire(url, session=None):
     if "/folder/" in url:
@@ -569,70 +604,29 @@ def uploadee(url):
         raise DirectDownloadLinkException("ERROR: Direct Link not found")
 
 
-def terabox(url, video_quality="HD Video", save_dir="HD_Video"):
-    """Terabox direct link generator
-    https://github.com/Dawn-India/Z-Mirror"""
+def terabox(url : str) -> str:
+    try:
+        response = get(f"https://teraboxvideodownloader.nepcoderdevs.workers.dev/?url={url}")
+        response.raise_for_status()
 
-    pattern = r"/s/(\w+)|surl=(\w+)"
-    if not search(pattern, url):
-        raise DirectDownloadLinkException("ERROR: Invalid terabox URL")
-
-    netloc = urlparse(url).netloc
-    terabox_url = url.replace(netloc, "1024tera.com")
-
-    urls = [
-        "https://ytshorts.savetube.me/api/v1/terabox-downloader",
-        f"https://teraboxvideodownloader.nepcoderdevs.workers.dev/?url={terabox_url}",
-        f"https://terabox.udayscriptsx.workers.dev/?url={terabox_url}",
-        f"https://mavimods.serv00.net/Mavialt.php?url={terabox_url}",
-        f"https://mavimods.serv00.net/Mavitera.php?url={terabox_url}",
-    ]
-
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0",
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Language": "en-US,en;q=0.5",
-        "Content-Type": "application/json",
-        "Origin": "https://ytshorts.savetube.me",
-        "Alt-Used": "ytshorts.savetube.me",
-        "Sec-Fetch-Dest": "empty",
-        "Sec-Fetch-Mode": "cors",
-        "Sec-Fetch-Site": "same-origin",
-    }
-
-    for base_url in urls:
         try:
-            if "api/v1" in base_url:
-                response = post(base_url, headers=headers, json={"url": terabox_url})
-            else:
-                response = get(base_url)
+            video_data = response.json().get("response", [])[0]
+        except (KeyError, IndexError):
+            return "Unexpected response structure."
 
-            if response.status_code == 200:
-                break
-        except RequestException as e:
-            raise DirectDownloadLinkException(f"ERROR: {e.__class__.__name__}") from e
-    else:
-        raise DirectDownloadLinkException("ERROR: Unable to fetch the JSON data")
+        resolution_url = video_data["resolutions"].get("HD Video") or video_data["resolutions"].get("Fast Download")
 
-    data = response.json()
-    details = {"contents": [], "title": "", "total_size": 0}
+        if not resolution_url:
+            return "No available video resolutions found."
 
-    for item in data["response"]:
-        title = item["title"]
-        resolutions = item.get("resolutions", {})
-        if zlink := resolutions.get(video_quality):
-            details["contents"].append(
-                {"url": zlink, "filename": title, "path": ospath.join(title, save_dir)}
-            )
-        details["title"] = title
+        return resolution_url
 
-    if not details["contents"]:
-        raise DirectDownloadLinkException("ERROR: No valid download links found")
-
-    if len(details["contents"]) == 1:
-        return details["contents"][0]["url"]
-
-    return details
+    except RequestException as network_error:
+        return f"Network error occurred: {str(network_error)}"
+    except JSONDecodeError:
+        return "Failed to parse the JSON response."
+    except Exception as general_error:
+        return f"An unexpected error occurred: {str(general_error)}"
 
 
 def filepress(url):
