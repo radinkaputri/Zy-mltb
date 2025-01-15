@@ -22,36 +22,28 @@ from ..helper.telegram_helper.message_utils import (
 @new_task
 async def cancel(_, message):
     user_id = message.from_user.id if message.from_user else message.sender_chat.id
-    msg = message.text.split()
+    msg = message.text.split("_", maxsplit=1)
+    await delete_message(message)
     if len(msg) > 1:
-        gid = msg[1]
+        gid = msg[1].split("@", maxsplit=1)
+        gid = gid[0]
         if len(gid) == 4:
             multi_tags.discard(gid)
             return
-        else:
-            task = await get_task_by_gid(gid)
-            if task is None:
-                await send_message(message, f"GID: <code>{gid}</code> Not Found.")
-                return
+        task = await get_task_by_gid(gid)
+        if task is None:
+            await delete_message(message)
+            return
     elif reply_to_id := message.reply_to_message_id:
         async with task_dict_lock:
             task = task_dict.get(reply_to_id)
         if task is None:
-            await send_message(message, "This is not an active task!")
             return
     elif len(msg) == 1:
-        msg = (
-            "Reply to an active Command message which was used to start the download"
-            f" or send <code>/{BotCommands.CancelTaskCommand[0]} GID</code> to cancel it!"
-        )
-        await send_message(message, msg)
         return
-    if (
-        Config.OWNER_ID != user_id
-        and task.listener.user_id != user_id
-        and (user_id not in user_data or not user_data[user_id].get("is_sudo"))
+    if user_id not in (Config.OWNER_ID, task.listener.user_id) and (
+        user_id not in user_data or not user_data[user_id].get("is_sudo")
     ):
-        await send_message(message, "This task is not for you!")
         return
     obj = task.task()
     await obj.cancel_task()

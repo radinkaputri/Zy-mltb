@@ -53,11 +53,12 @@ STATUSES = {
 
 
 async def get_task_by_gid(gid: str):
+    gid = gid[:8]
     async with task_dict_lock:
         for tk in task_dict.values():
             if hasattr(tk, "seeding"):
                 await sync_to_async(tk.update)
-            if tk.gid() == gid:
+            if tk.gid()[:8] == gid:
                 return tk
         return None
 
@@ -224,7 +225,7 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
             msg += f" | <b>Time: </b>{task.seeding_time()}"
         else:
             msg += f"\n<b>Size: </b>{task.size()}"
-        msg += f"\n<b>Gid: </b><code>{task.gid()}</code>\n\n"
+        msg += f"\n<b>/cancel_{task.gid()[:8]}</b>\n\n"
 
     if len(msg) == 0:
         if status == "All":
