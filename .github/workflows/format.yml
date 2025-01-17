@@ -1,7 +1,7 @@
 name: Format Code with Ruff
 
 on:
-  workflow_dispatch:
+  push:
 
 jobs:
   code-format:
