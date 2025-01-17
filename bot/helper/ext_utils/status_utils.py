@@ -195,7 +195,7 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
             msg += (
                 f"\n{get_progress_bar_string(progress)} {progress}"
                 f"\n<b>Processed:</b> {task.processed_bytes()}{subsize} {count}"
-                f"\n<b>Size:</b> {task.size()} | <b>Speed:</b> {task.speed()} | <b>ETA:</b> {task.eta()}"
+                f"\n<b>Size:</b> {task.size()}\n<b>Speed:</b> {task.speed()}\n<b>ETA:</b> {task.eta()}"
             )
             if hasattr(task, "seeders_num"):
                 msg += f"\n<b>Seeders:</b> {task.seeders_num()} | <b>Leechers:</b> {task.leechers_num()}"
@@ -228,7 +228,7 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
                 buttons.data_button(label, f"status {sid} st {status_value}")
     buttons.data_button("♻️", f"status {sid} ref", position="header")
     msg += (
-        f"<b>CPU:</b> {cpu_percent()}% | <b>FREE:</b> {get_readable_file_size(disk_usage(Config.DOWNLOAD_DIR).free)}"
-        f"\n<b>RAM:</b> {virtual_memory().percent}% | <b>UPTIME:</b> {get_readable_time(time() - bot_start_time)}"
+        f"<code>CPU:</code> {cpu_percent()}% | <code>FREE:</code> {get_readable_file_size(disk_usage(Config.DOWNLOAD_DIR).free)}"
+        f"\n<code>RAM:</code> {virtual_memory().percent}% | <code>UPTM:</code> {get_readable_time(time() - bot_start_time)}"
     )
     return msg, buttons.build_menu(8)
