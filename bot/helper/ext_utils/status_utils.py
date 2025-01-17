@@ -167,7 +167,7 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
     STATUS_LIMIT = Config.STATUS_LIMIT
     tasks = await sync_to_async(get_specific_tasks, status, sid if is_user else None)
     tasks_no = len(tasks)
-    pages = max(1, -(-tasks_no // STATUS_LIMIT))  # Ceiling division
+    pages = max(1, -(-tasks_no // STATUS_LIMIT))
     page_no = max(1, (page_no - 1) % pages + 1)
     start_position = (page_no - 1) * STATUS_LIMIT
     msg = ""
