@@ -171,26 +171,42 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
     page_no = max(1, (page_no - 1) % pages + 1)
     start_position = (page_no - 1) * STATUS_LIMIT
     msg = ""
-    
-    for index, task in enumerate(tasks[start_position : start_position + STATUS_LIMIT], start=1):
+
+    for index, task in enumerate(
+        tasks[start_position : start_position + STATUS_LIMIT], start=1
+    ):
         tstatus = await sync_to_async(task.status) if status == "All" else status
         task_gid = task.gid()[:8]
-        cancel_task = f"<b>/cancel_{task_gid}</b>" if "-" not in task_gid else f"<code>/cancel {task_gid}</code>"
+        cancel_task = (
+            f"<b>/cancel_{task_gid}</b>"
+            if "-" not in task_gid
+            else f"<code>/cancel {task_gid}</code>"
+        )
         msg += (
-            f"<b>{index + start_position}.{'<a href=\"' + task.listener.message.link + '\">' if task.listener.is_super_chat else ''}{tstatus}{'</a>' if task.listener.is_super_chat else ''}: </b>"
+            f"<b>{index + start_position}.{'<a href="' + task.listener.message.link + '">' if task.listener.is_super_chat else ''}{tstatus}{'</a>' if task.listener.is_super_chat else ''}: </b>"
             f"<code>{escape(task.name())}</code>"
         )
         if task.listener.subname:
             msg += f"\n<i>{task.listener.subname}</i>"
 
-        if tstatus not in [MirrorStatus.STATUS_SEED, MirrorStatus.STATUS_QUEUEUP] and task.listener.progress:
+        if (
+            tstatus not in [MirrorStatus.STATUS_SEED, MirrorStatus.STATUS_QUEUEUP]
+            and task.listener.progress
+        ):
             progress = (
-                await task.progress() if iscoroutinefunction(task.progress) else task.progress()
+                await task.progress()
+                if iscoroutinefunction(task.progress)
+                else task.progress()
             )
-            subsize = f"/{get_readable_file_size(task.listener.subsize)}" if task.listener.subname else ""
+            subsize = (
+                f"/{get_readable_file_size(task.listener.subsize)}"
+                if task.listener.subname
+                else ""
+            )
             count = (
                 f"({task.listener.proceed_count}/{len(task.listener.files_to_proceed) or '?'})"
-                if task.listener.subname else ""
+                if task.listener.subname
+                else ""
             )
             msg += (
                 f"\n{get_progress_bar_string(progress)} {progress}"
@@ -210,7 +226,11 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
         msg += f"\n<blockquote>{cancel_task}</blockquote>\n\n"
 
     if not msg:
-        return (None, None) if status == "All" else (f"No Active {status} Tasks!\n\n", None)
+        return (
+            (None, None)
+            if status == "All"
+            else (f"No Active {status} Tasks!\n\n", None)
+        )
 
     buttons = ButtonMaker()
     if not is_user:

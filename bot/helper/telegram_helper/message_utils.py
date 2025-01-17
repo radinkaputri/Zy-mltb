@@ -181,9 +181,7 @@ async def check_permission(client, chat, uploader_id, up_dest):
         not member.privileges.can_manage_chat
         or not member.privileges.can_delete_messages
     ):
-        raise ValueError(
-            "You don't have enough privileges in this chat!"
-        )
+        raise ValueError("You don't have enough privileges in this chat!")
 
 
 async def update_status_message(sid, force=False):
@@ -212,7 +210,9 @@ async def update_status_message(sid, force=False):
                 del intervals["status"][sid]
             return
         if text != status_dict[sid]["message"].text:
-            message = await edit_message(status_dict[sid]["message"], text, buttons, block=False)
+            message = await edit_message(
+                status_dict[sid]["message"], text, buttons, block=False
+            )
             if isinstance(message, str):
                 if message.startswith("Telegram says: [40"):
                     del status_dict[sid]

@@ -48,6 +48,7 @@ def is_gdrive_id(id_: str):
         )
     )
 
+
 def is_mega_link(url):
     return "mega.nz" in url or "mega.co.nz" in url
 

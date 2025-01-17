@@ -210,9 +210,7 @@ class GoogleDriveList(GoogleDriveHelper):
             else "\nTransfer Type: <i>Upload</i>"
         )
         if self.list_status == "gdu":
-            default_id = (
-                self.listener.user_dict.get("gdrive_id") or Config.GDRIVE_ID
-            )
+            default_id = self.listener.user_dict.get("gdrive_id") or Config.GDRIVE_ID
             msg += f"\nDefault Gdrive ID: {default_id}" if default_id else ""
         msg += f"\n\nItems: {items_no}"
         if items_no > LIST_LIMIT:

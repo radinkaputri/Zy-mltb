@@ -128,9 +128,7 @@ class MegaAppListener(MegaListener):
         )
         if transfer.getState() in [1, 4]:
             return
-        self.error = (
-            f"TransferTempError: {error.toString()} ({transfer.getFileName()})"
-        )
+        self.error = f"TransferTempError: {error.toString()} ({transfer.getFileName()})"
         if not self.is_cancelled:
             self.is_cancelled = True
             self.continue_event.set()

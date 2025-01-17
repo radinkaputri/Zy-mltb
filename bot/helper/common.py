@@ -165,11 +165,15 @@ class TaskConfig:
         )
         if self.link not in ["rcl", "gdl"]:
             if is_rclone_path(self.link):
-                if not self.link.startswith("mrcc:") and self.user_dict.get("user_tokens"):
+                if not self.link.startswith("mrcc:") and self.user_dict.get(
+                    "user_tokens"
+                ):
                     self.link = f"mrcc:{self.link}"
                 await self.is_token_exists(self.link, "dl")
             elif is_gdrive_link(self.link):
-                if not self.link.startswith(("mtp:", "tp:", "sa:")) and self.user_dict.get("user_tokens"):
+                if not self.link.startswith(
+                    ("mtp:", "tp:", "sa:")
+                ) and self.user_dict.get("user_tokens"):
                     self.link = f"mtp:{self.link}"
                 await self.is_token_exists(self.link, "dl")
         elif self.link == "rcl":

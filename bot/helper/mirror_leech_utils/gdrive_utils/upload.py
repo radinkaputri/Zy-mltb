@@ -132,9 +132,7 @@ class GoogleDriveUpload(GoogleDriveHelper):
         stop=stop_after_attempt(3),
         retry=(retry_if_exception_type(Exception)),
     )
-    def _upload_file(
-        self, file_path, file_name, mime_type, dest_id, in_dir=True
-    ):
+    def _upload_file(self, file_path, file_name, mime_type, dest_id, in_dir=True):
         # File body description
         file_metadata = {
             "name": file_name,

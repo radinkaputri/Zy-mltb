@@ -340,11 +340,16 @@ class TaskListener(TaskConfig):
                 for index, (link, name) in enumerate(files.items(), start=1):
                     fmsg += f"{index}. <a href='{link}'>{name}</a>\n"
                     if len(fmsg.encode() + msg.encode()) > 4000:
-                        await send_message(self.message, f"{msg}<blockquote expandable>{fmsg}</blockquote>")
+                        await send_message(
+                            self.message,
+                            f"{msg}<blockquote expandable>{fmsg}</blockquote>",
+                        )
                         await sleep(1)
                         fmsg = ""
                 if fmsg != "":
-                    await send_message(self.message, f"{msg}<blockquote expandable>{fmsg}</blockquote>")
+                    await send_message(
+                        self.message, f"{msg}<blockquote expandable>{fmsg}</blockquote>"
+                    )
         else:
             msg += f"\n\n<b>Type: </b>{mime_type}"
             if mime_type == "Folder":

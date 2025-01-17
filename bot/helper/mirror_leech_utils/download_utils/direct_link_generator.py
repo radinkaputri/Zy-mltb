@@ -218,6 +218,7 @@ def get_captcha_token(session, params):
     if token := findall(r'"rresp","(.*?)"', res.text):
         return token[0]
 
+
 def buzzheavier(url):
     """
     Generate a direct download link for buzzheavier URLs.
@@ -251,6 +252,7 @@ def buzzheavier(url):
         raise DirectDownloadLinkException(f"ERROR: {str(e)}")
     finally:
         session.close()
+
 
 def buzzheavier(url):
     """
@@ -442,7 +444,7 @@ def onedrive(link):
         data = f"--{boundary}\r\nContent-Disposition: form-data;name=data\r\nPrefer: Migration=EnableRedirect;FailOnMigratedFiles\r\nX-HTTP-Method-Override: GET\r\nContent-Type: application/json\r\n\r\n--{boundary}--"
         try:
             resp = session.get(
-                f'https://api.onedrive.com/v1.0/drives/{folder_id.split("!", 1)[0]}/items/{folder_id}?$select=id,@content.downloadUrl&ump=1&authKey={authkey}',
+                f"https://api.onedrive.com/v1.0/drives/{folder_id.split('!', 1)[0]}/items/{folder_id}?$select=id,@content.downloadUrl&ump=1&authKey={authkey}",
                 headers=headers,
                 data=data,
             ).json()
@@ -640,9 +642,11 @@ def uploadee(url):
         raise DirectDownloadLinkException("ERROR: Direct Link not found")
 
 
-def terabox(url : str) -> str:
+def terabox(url: str) -> str:
     try:
-        response = get(f"https://teraboxvideodownloader.nepcoderdevs.workers.dev/?url={url}")
+        response = get(
+            f"https://teraboxvideodownloader.nepcoderdevs.workers.dev/?url={url}"
+        )
         response.raise_for_status()
 
         try:
@@ -650,7 +654,9 @@ def terabox(url : str) -> str:
         except (KeyError, IndexError):
             return "Unexpected response structure."
 
-        resolution_url = video_data["resolutions"].get("HD Video") or video_data["resolutions"].get("Fast Download")
+        resolution_url = video_data["resolutions"].get("HD Video") or video_data[
+            "resolutions"
+        ].get("Fast Download")
 
         if not resolution_url:
             return "No available video resolutions found."
@@ -693,14 +699,14 @@ def filepress(url):
         except Exception as e:
             raise DirectDownloadLinkException(f"ERROR: {e.__class__.__name__}") from e
     if "data" not in res:
-        raise DirectDownloadLinkException(f'ERROR: {res["statusText"]}')
-    return f'https://drive.google.com/uc?id={res["data"]}&export=download'
+        raise DirectDownloadLinkException(f"ERROR: {res['statusText']}")
+    return f"https://drive.google.com/uc?id={res['data']}&export=download"
 
 
 def gdtot(url):
     cget = create_scraper().request
     try:
-        res = cget("GET", f'https://gdtot.pro/file/{url.split("/")[-1]}')
+        res = cget("GET", f"https://gdtot.pro/file/{url.split('/')[-1]}")
     except Exception as e:
         raise DirectDownloadLinkException(f"ERROR: {e.__class__.__name__}") from e
     token_url = HTML(res.text).xpath(
@@ -838,7 +844,7 @@ def shrdsk(url):
     with create_scraper() as session:
         try:
             _json = session.get(
-                f'https://us-central1-affiliate2apk.cloudfunctions.net/get_data?shortid={url.split("/")[-1]}',
+                f"https://us-central1-affiliate2apk.cloudfunctions.net/get_data?shortid={url.split('/')[-1]}",
             ).json()
         except Exception as e:
             raise DirectDownloadLinkException(f"ERROR: {e.__class__.__name__}") from e

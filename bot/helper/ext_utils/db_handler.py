@@ -93,7 +93,6 @@ class DbManager:
         if path == "config.py":
             await self.update_deploy_config()
 
-
     async def update_user_data(self, user_id):
         if self._return:
             return
