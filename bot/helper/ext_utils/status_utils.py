@@ -184,6 +184,8 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
         tasks[start_position : STATUS_LIMIT + start_position], start=1
     ):
         tstatus = await sync_to_async(task.status) if status == "All" else status
+        task_gid = task.gid()[:8]
+        cancel_task = f"<code>/cancel_{task_gid}</code>" if "-" in task_gid else f"<b>/cancel_{task_gid}</b>"
         if task.listener.is_super_chat:
             msg += f"<b>{index + start_position}.<a href='{task.listener.message.link}'>{tstatus}</a>: </b>"
         else:
@@ -225,7 +227,7 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
             msg += f" | <b>Time: </b>{task.seeding_time()}"
         else:
             msg += f"\n<b>Size: </b>{task.size()}"
-        msg += f"\n<b>/cancel_{task.gid()[:8]}</b>\n\n"
+        msg += f"\n<blockquote>{cancel_task}</blockquote>\n\n"
 
     if len(msg) == 0:
         if status == "All":
