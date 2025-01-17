@@ -164,80 +164,58 @@ def get_progress_bar_string(pct):
 
 
 async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=1):
-    msg = ""
-    button = None
-
-    tasks = await sync_to_async(get_specific_tasks, status, sid if is_user else None)
-
     STATUS_LIMIT = Config.STATUS_LIMIT
+    tasks = await sync_to_async(get_specific_tasks, status, sid if is_user else None)
     tasks_no = len(tasks)
-    pages = (max(tasks_no, 1) + STATUS_LIMIT - 1) // STATUS_LIMIT
-    if page_no > pages:
-        page_no = (page_no - 1) % pages + 1
-        status_dict[sid]["page_no"] = page_no
-    elif page_no < 1:
-        page_no = pages - (abs(page_no) % pages)
-        status_dict[sid]["page_no"] = page_no
+    pages = max(1, -(-tasks_no // STATUS_LIMIT))  # Ceiling division
+    page_no = max(1, (page_no - 1) % pages + 1)
     start_position = (page_no - 1) * STATUS_LIMIT
-
-    for index, task in enumerate(
-        tasks[start_position : STATUS_LIMIT + start_position], start=1
-    ):
+    msg = ""
+    
+    for index, task in enumerate(tasks[start_position : start_position + STATUS_LIMIT], start=1):
         tstatus = await sync_to_async(task.status) if status == "All" else status
         task_gid = task.gid()[:8]
-        cancel_task = f"<code>/cancel_{task_gid}</code>" if "-" in task_gid else f"<b>/cancel_{task_gid}</b>"
-        if task.listener.is_super_chat:
-            msg += f"<b>{index + start_position}.<a href='{task.listener.message.link}'>{tstatus}</a>: </b>"
-        else:
-            msg += f"<b>{index + start_position}.{tstatus}: </b>"
-        msg += f"<code>{escape(f'{task.name()}')}</code>"
+        cancel_task = f"<b>/cancel_{task_gid}</b>" if "-" not in task_gid else f"<code>/cancel {task_gid}</code>"
+        msg += (
+            f"<b>{index + start_position}.{'<a href=\"' + task.listener.message.link + '\">' if task.listener.is_super_chat else ''}{tstatus}{'</a>' if task.listener.is_super_chat else ''}: </b>"
+            f"<code>{escape(task.name())}</code>"
+        )
         if task.listener.subname:
             msg += f"\n<i>{task.listener.subname}</i>"
-        if (
-            tstatus not in [MirrorStatus.STATUS_SEED, MirrorStatus.STATUS_QUEUEUP]
-            and task.listener.progress
-        ):
+
+        if tstatus not in [MirrorStatus.STATUS_SEED, MirrorStatus.STATUS_QUEUEUP] and task.listener.progress:
             progress = (
-                await task.progress()
-                if iscoroutinefunction(task.progress)
-                else task.progress()
+                await task.progress() if iscoroutinefunction(task.progress) else task.progress()
             )
-            msg += f"\n{get_progress_bar_string(progress)} {progress}"
-            if task.listener.subname:
-                subsize = f"/{get_readable_file_size(task.listener.subsize)}"
-                ac = len(task.listener.files_to_proceed)
-                count = f"({task.listener.proceed_count}/{ac or '?'})"
-            else:
-                subsize = ""
-                count = ""
-            msg += f"\n<b>Processed:</b> {task.processed_bytes()}{subsize} {count}"
-            msg += f"\n<b>Size:</b> {task.size()}"
-            msg += f"\n<b>Speed:</b> {task.speed()}"
-            msg += f"\n<b>ETA:</b> {task.eta()}"
+            subsize = f"/{get_readable_file_size(task.listener.subsize)}" if task.listener.subname else ""
+            count = (
+                f"({task.listener.proceed_count}/{len(task.listener.files_to_proceed) or '?'})"
+                if task.listener.subname else ""
+            )
+            msg += (
+                f"\n{get_progress_bar_string(progress)} {progress}"
+                f"\n<b>Processed:</b> {task.processed_bytes()}{subsize} {count}"
+                f"\n<b>Size:</b> {task.size()} | <b>Speed:</b> {task.speed()} | <b>ETA:</b> {task.eta()}"
+            )
             if hasattr(task, "seeders_num"):
-                try:
-                    msg += f"\n<b>Seeders:</b> {task.seeders_num()} | <b>Leechers:</b> {task.leechers_num()}"
-                except:
-                    pass
+                msg += f"\n<b>Seeders:</b> {task.seeders_num()} | <b>Leechers:</b> {task.leechers_num()}"
         elif tstatus == MirrorStatus.STATUS_SEED:
-            msg += f"\n<b>Size: </b>{task.size()}"
-            msg += f"\n<b>Speed: </b>{task.seed_speed()}"
-            msg += f" | <b>Uploaded: </b>{task.uploaded_bytes()}"
-            msg += f"\n<b>Ratio: </b>{task.ratio()}"
-            msg += f" | <b>Time: </b>{task.seeding_time()}"
+            msg += (
+                f"\n<b>Size: </b>{task.size()} | <b>Speed: </b>{task.seed_speed()} | <b>Uploaded: </b>{task.uploaded_bytes()}"
+                f"\n<b>Ratio: </b>{task.ratio()} | <b>Time: </b>{task.seeding_time()}"
+            )
         else:
             msg += f"\n<b>Size: </b>{task.size()}"
+
         msg += f"\n<blockquote>{cancel_task}</blockquote>\n\n"
 
-    if len(msg) == 0:
-        if status == "All":
-            return None, None
-        else:
-            msg = f"No Active {status} Tasks!\n\n"
+    if not msg:
+        return (None, None) if status == "All" else (f"No Active {status} Tasks!\n\n", None)
+
     buttons = ButtonMaker()
     if not is_user:
-        buttons.data_button("📜", f"status {sid} ov", position="header")
-    if len(tasks) > STATUS_LIMIT:
+        buttons.data_button("☰", f"status {sid} ov", position="header")
+    if tasks_no > STATUS_LIMIT:
         msg += f"<b>Page:</b> {page_no}/{pages} | <b>Tasks:</b> {tasks_no} | <b>Step:</b> {page_step}\n"
         buttons.data_button("<<", f"status {sid} pre", position="header")
         buttons.data_button(">>", f"status {sid} nex", position="header")
@@ -245,11 +223,12 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
             for i in [1, 2, 4, 6, 8, 10, 15]:
                 buttons.data_button(i, f"status {sid} ps {i}", position="footer")
     if status != "All" or tasks_no > 20:
-        for label, status_value in list(STATUSES.items()):
+        for label, status_value in STATUSES.items():
             if status_value != status:
                 buttons.data_button(label, f"status {sid} st {status_value}")
     buttons.data_button("♻️", f"status {sid} ref", position="header")
-    button = buttons.build_menu(8)
-    msg += f"<b>CPU:</b> {cpu_percent()}% | <b>FREE:</b> {get_readable_file_size(disk_usage(Config.DOWNLOAD_DIR).free)}"
-    msg += f"\n<b>RAM:</b> {virtual_memory().percent}% | <b>UPTIME:</b> {get_readable_time(time() - bot_start_time)}"
-    return msg, button
+    msg += (
+        f"<b>CPU:</b> {cpu_percent()}% | <b>FREE:</b> {get_readable_file_size(disk_usage(Config.DOWNLOAD_DIR).free)}"
+        f"\n<b>RAM:</b> {virtual_memory().percent}% | <b>UPTIME:</b> {get_readable_time(time() - bot_start_time)}"
+    )
+    return msg, buttons.build_menu(8)
